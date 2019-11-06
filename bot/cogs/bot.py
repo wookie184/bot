@@ -82,7 +82,8 @@ class Bot(Cog):
         embed = Embed(description=text)
         await ctx.send(embed=embed)
 
-    def codeblock_stripping(self, msg: str, bad_ticks: bool) -> Optional[Tuple[Tuple[str, ...], str]]:
+    @classmethod
+    def codeblock_stripping(cls, msg: str, bad_ticks: bool) -> Optional[Tuple[Tuple[str, ...], str]]:
         """
         Strip msg in order to find Python code.
 
@@ -136,12 +137,12 @@ class Bot(Cog):
                 old = content.strip()
 
                 # Strips REPL code out of the message if there is any.
-                content, repl_code = self.repl_stripping(old)
+                content, repl_code = cls.repl_stripping(old)
                 if old != content:
                     return (content, old), repl_code
 
                 # Try to apply indentation fixes to the code.
-                content = self.fix_indentation(content)
+                content = cls.fix_indentation(content)
 
                 # Check if the code contains backticks, if it does ignore the message.
                 if "`" in content:
@@ -151,7 +152,8 @@ class Bot(Cog):
                     log.trace(f"Returning message.\n\n{content}\n\n")
                     return (content,), repl_code
 
-    def fix_indentation(self, msg: str) -> str:
+    @staticmethod
+    def fix_indentation(msg: str) -> str:
         """Attempts to fix badly indented code."""
         def unindent(code: str, skip_spaces: int = 0) -> str:
             """Unindents all code down to the number of spaces given in skip_spaces."""
@@ -190,7 +192,8 @@ class Bot(Cog):
             msg = f"{first_line}\n{unindent(code, 4)}"
         return msg
 
-    def repl_stripping(self, msg: str) -> Tuple[str, bool]:
+    @staticmethod
+    def repl_stripping(msg: str) -> Tuple[str, bool]:
         """
         Strip msg in order to extract Python code out of REPL output.
 
@@ -210,7 +213,8 @@ class Bot(Cog):
             log.trace(f"Found REPL code in \n\n{msg}\n\n")
             return final.rstrip(), True
 
-    def has_bad_ticks(self, msg: Message) -> bool:
+    @staticmethod
+    def has_bad_ticks(msg: Message) -> bool:
         """Check to see if msg contains ticks that aren't '`'."""
         not_backticks = [
             "'''", '"""', "\u00b4\u00b4\u00b4", "\u2018\u2018\u2018", "\u2019\u2019\u2019",

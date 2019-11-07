@@ -32,7 +32,8 @@ class Source(Cog):
                     f"\u2022 [Bot]({self.ORG_URL}/bot)\n"
                     f"\u2022 [SeasonalBot]({self.ORG_URL}/seasonalbot)\n"
                 ),
-                url=self.ORG_URL
+                url=self.ORG_URL,
+                colour=Colour.blurple(),
             )
             await ctx.send(embed=embed)
             return

@@ -36,6 +36,7 @@ bot.load_extension("bot.cogs.config_verifier")
 # Commands, etc
 bot.load_extension("bot.cogs.antimalware")
 bot.load_extension("bot.cogs.antispam")
+bot.load_extension('bot.cogs.autoconfig')
 bot.load_extension("bot.cogs.bot")
 bot.load_extension("bot.cogs.clean")
 bot.load_extension("bot.cogs.extensions")

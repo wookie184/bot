@@ -69,4 +69,5 @@ bot.load_extension("bot.cogs.wolfram")
 if not hasattr(discord.message.Message, '_handle_edited_timestamp'):
     patches.message_edited_at.apply_patch()
 
-bot.run(BotConfig.token)
+if __name__ == "__main__":
+    bot.run(BotConfig.token)

@@ -101,15 +101,11 @@ class Reminders(Scheduler, Cog):
 
     async def _scheduled_task(self, reminder: dict) -> None:
         """A coroutine which sends the reminder once the time is reached, and cancels the running task."""
-        reminder_id = reminder["id"]
         reminder_datetime = isoparse(reminder['expiration']).replace(tzinfo=None)
 
         # Send the reminder message once the desired duration has passed
         await wait_until(reminder_datetime)
         await self.send_reminder(reminder)
-
-        log.debug(f"Deleting reminder {reminder_id} (the user has been reminded).")
-        await self._delete_reminder(reminder_id)
 
     async def _delete_reminder(self, reminder_id: str, cancel_task: bool = True) -> None:
         """Delete a reminder from the database, given its ID, and cancel the running task."""

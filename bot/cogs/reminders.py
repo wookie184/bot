@@ -73,7 +73,7 @@ class Reminders(Scheduler, Cog):
                 f"Reminder {reminder['id']} invalid: "
                 f"User {reminder['author']}={user}, Channel {reminder['channel_id']}={channel}."
             )
-            asyncio.create_task(self._delete_reminder(reminder['id'], cancel_task))
+            asyncio.create_task(self.bot.api_client.delete(f"bot/reminders/{reminder['id']}"))
 
         return is_valid, user, channel
 
@@ -106,14 +106,6 @@ class Reminders(Scheduler, Cog):
         # Send the reminder message once the desired duration has passed
         await wait_until(reminder_datetime)
         await self.send_reminder(reminder)
-
-    async def _delete_reminder(self, reminder_id: str, cancel_task: bool = True) -> None:
-        """Delete a reminder from the database, given its ID, and cancel the running task."""
-        await self.bot.api_client.delete('bot/reminders/' + str(reminder_id))
-
-        if cancel_task:
-            # Now we can remove it from the schedule list
-            self.cancel_task(reminder_id)
 
     async def _reschedule_reminder(self, reminder: dict) -> None:
         """Reschedule a reminder object."""
@@ -148,11 +140,10 @@ class Reminders(Scheduler, Cog):
                 name=f"Sorry it arrived {humanize_delta(late, max_units=2)} late!"
             )
 
-        await channel.send(
-            content=user.mention,
-            embed=embed
-        )
-        await self._delete_reminder(reminder["id"])
+        await channel.send(content=user.mention, embed=embed)
+
+        log.debug(f"Deleting reminder #{reminder['id']} (the user has been reminded).")
+        await self.bot.api_client.delete(f"bot/reminders/{reminder['id']}")
 
     @group(name="remind", aliases=("reminder", "reminders"), invoke_without_command=True)
     async def remind_group(self, ctx: Context, expiration: Duration, *, content: str) -> None:
@@ -326,7 +317,9 @@ class Reminders(Scheduler, Cog):
     @remind_group.command("delete", aliases=("remove", "cancel"))
     async def delete_reminder(self, ctx: Context, id_: int) -> None:
         """Delete one of your active reminders."""
-        await self._delete_reminder(id_)
+        await self.bot.api_client.delete(f"bot/reminders/{id_}")
+        self.cancel_task(id_)
+
         await self._send_confirmation(
             ctx,
             on_success="That reminder has been deleted successfully!",
